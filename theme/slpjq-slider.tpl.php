@@ -54,13 +54,19 @@ global $slpjq_start_open;
       </div>
       <div class="slpjq-center">
         <h1><?php print t('Member login'); ?></h1>
-        <?php print render(drupal_get_form('user_login')); ?>
+        <?php
+            $elements = drupal_get_form('user_login');
+            print drupal_render($elements);
+        ?>
         <p><a href="<?php echo $base_path ?>user/password"><?php print t('Request new password'); ?></a></p>
       </div>
       <?php if ($user_register): ?>
       <div class="slpjq-left slpjq-right">
         <h1><?php print t('Not a member yet?') . " " . t('Register!'); ?></h1>
-        <?php print render(drupal_get_form('user_register_form')); ?>
+        <?php
+            $elements = drupal_get_form('user_register_form');
+            print drupal_render($elements);
+        ?>
       </div>
       <?php endif; ?>
     </div>
