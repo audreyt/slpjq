@@ -8,11 +8,15 @@
 ;
 name = SlipJaq
 description = Sliding login panel using jQuery
-core = 6.x
+core = 7.x
 ;package = "Other"
-dependencies[] = jquery_ui
+;dependencies[] = jquery_update
 
-version = "6.x-1.0-beta3"
-core = "6.x"
+version = "7.x-1.0-beta3"
+core = 7.x
 project = "slpjq"
 datestamp = "1270591885"
+
+files[] = slpjq.install
+files[] = slpjq.module
+files[] = theme/slpjq-slider.tpl.php

@@ -35,17 +35,17 @@
  */
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function slpjq_theme() {
   return array(
     'slpjq_slider' => array(
-      'arguments' => array(
+      'variables' => array(
         'logged_in' => user_is_logged_in(),
         'title' => variable_get('slpjq_title', ''),
         'image_url' => variable_get('slpjq_image_url', ''),
         'user_register' => variable_get('user_register', 1),
-        ),
+      ),
       'template' => 'slpjq-slider',
       'path' => slpjq_get_path('theme'),
     ),
@@ -54,13 +54,12 @@ function slpjq_theme() {
 
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function slpjq_help($path, $arg) {
   if ($path == 'admin/help#slpjq') {
     $description = t('Sliding login panel using jQuery');
-    return
-      '<div class="slpjq-help"><p>' .
+    return '<div class="slpjq-help"><p>' .
       t('Sliding login panel using jQuery') .
       '</p></div>';
   }
@@ -68,40 +67,53 @@ function slpjq_help($path, $arg) {
 
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function slpjq_menu() {
-  return array('admin/settings/slpjq' => array(
-    'title' => 'SlipJaq',
-    'description' => 'SlipJaq configuration',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('slpjq_admin'),
-    'access arguments' => array('administer site configuration'),
-    'type' => MENU_NORMAL_ITEM,
+  return array('admin/config/slpjq' => array(
+      'title' => 'SlipJaq',
+      'description' => 'SlipJaq configuration',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('slpjq_admin'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM,
     ));
 }
 
 
 /**
- * Implementation of hook_block().
+ * Implements hook_block_info().
  */
-function slpjq_block($op = 'list', $delta = 0, $edit = array()) {
-  if ($op == 'list') {
-    return array(array(
+function slpjq_block_info() {
+  if (TRUE) {
+    return array(
+      array(
         'info' => t('SlipJaq - Sliding login panel using jQuery'),
-        'cache' => BLOCK_CACHE_PER_USER,
+//        'cache' => BLOCK_CACHE_PER_USER,
         'visibility' => 0, // This item is not displayed on the pages in the following list.
         'pages' => variable_get('slpjq_disallowed_paths', array()),
-        ),
-      );
+      ),
+    );
   }
-  elseif ($op == 'configure') {
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function slpjq_block_configure($delta) {
+  if (TRUE) {
     $form = slpjq_get_config_form();
     // Don't present the full-page option on the block configuration screen.
     unset($form['slpjq_display_top']);
     return $form;
   }
-  elseif ($op == 'save') {
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function slpjq_block_save($delta, $edit) {
+  if (TRUE) {
     $form = slpjq_get_config_form();
     // Turn off the top display if the block is edited.
     // (Yes, this might be confusing, but not as confusing if *both* are selected.)
@@ -111,19 +123,30 @@ function slpjq_block($op = 'list', $delta = 0, $edit = array()) {
       variable_set($field, $edit[$field]);
     }
   }
-  elseif ($op == 'view') {
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function slpjq_block_view($delta) {
+  if (TRUE) {
     return array(
       'content' => slpjq_slider_render(),
-      );
+    );
   }
-  else {
+}
+
+/**
+ * Implements hook_block().
+ */
+function slpjq_block_OLD($op = 'list', $delta = 0, $edit = array()) {
+  // TODO Remaining code in this function needs to be moved to the appropriate new hook function.
     return NULL;
-  }
 }
 
 
 /**
- * Implementation of hook_init().
+ * Implements hook_init().
  *
  */
 function slpjq_init() {
@@ -131,7 +154,7 @@ function slpjq_init() {
     drupal_add_css(slpjq_get_path('css/slpjq.css'));
     // only add the JavaScript when the dynamic slider is active.
     if (!user_is_logged_in()) {
-      drupal_add_js(array('slpjq' => array('slidePeriod' => variable_get('slpjq_slide_period', ''))), 'setting');
+      drupal_add_js(array('slpjq' => array('slidePeriod' => variable_get('slpjq_slide_period', ''))), array('type' => 'setting', 'scope' => JS_DEFAULT));
       drupal_add_js(slpjq_get_path('js/slpjq.js'));
     }
   }
@@ -139,7 +162,7 @@ function slpjq_init() {
 
 
 /**
- * Implementation of hook_footer().
+ * Implements hook_footer().
  *
  * This is where we insert the page-top version of the slider.
  */
@@ -151,19 +174,19 @@ function slpjq_footer($is_front = FALSE) {
 
 
 /**
- * Implementation of hook_form_user_login_block_alter().
+ * Implements hook_form_user_login_block_alter().
  *
  * @see slpjq_form_user_login_block_validate()
  */
 function slpjq_form_user_login_block_alter(&$form, &$form_state) {
-  $form['links'] = array();     // Remove the "create new account" & "send pw reminder" links.
+  $form['links'] = array(); // Remove the "create new account" & "send pw reminder" links.
   $form['#action'] = url('user', array('query' => drupal_get_destination()));
   $form['#validate'][] = 'slpjq_form_user_login_block_validate';
 }
 
 
 /**
- * Implementation of hook_form_user_register_alter().
+ * Implements hook_form_user_register_alter().
  *
  * @see slpjq_form_user_register_validate()
  */
@@ -214,7 +237,7 @@ function slpjq_form_user_register_validate($form, &$form_state) {
 /**
  * Return the form for our settings page.
  */
-function slpjq_admin() {
+function slpjq_admin($form, &$form_state) {
   return system_settings_form(slpjq_get_config_form());
 }
 
@@ -223,7 +246,7 @@ function slpjq_admin() {
  * Return TRUE if the given path begins with the specified prefix.
  */
 function _slpjq_path_begins_with($prefix, $path) {
-  return (($path == $prefix) || (drupal_substr($path, 0, drupal_strlen($prefix)+1) == ($prefix . '/')));
+  return (($path == $prefix) || (drupal_substr($path, 0, drupal_strlen($prefix) + 1) == ($prefix . '/')));
 }
 
 
@@ -234,8 +257,7 @@ function slpjq_path_begins_with($prefix, $path = NULL) {
   if ($path === NULL) {
     $path = request_uri();
   }
-  return
-    _slpjq_path_begins_with($prefix, $path) ||
+  return _slpjq_path_begins_with($prefix, $path) ||
     _slpjq_path_begins_with($prefix, drupal_get_normal_path($path));
 }
 
@@ -273,7 +295,7 @@ function slpjq_slider_allowed_here() {
   else {
     // While logged out, we don't display on these "disallowed" paths.
     foreach (explode("\n", variable_get('slpjq_disallowed_paths', array())) as $path) {
-      if (slpjq_path_begins_with('/'. rtrim($path))) {
+      if (slpjq_path_begins_with('/' . rtrim($path))) {
         return FALSE;
       }
     }
@@ -290,9 +312,17 @@ function slpjq_slider_render() {
   static $already_rendered;
   if (!isset($already_rendered)) {
     $already_rendered = TRUE;
-    return theme('slpjq_slider');
+    // TODO Please change this theme call to use an associative array for the $variables parameter.
+    return theme(
+        'slpjq_slider', array(
+            'logged_in' => user_is_logged_in(),
+            'title' => variable_get('slpjq_title', ''),
+            'image_url' => variable_get('slpjq_image_url', ''),
+            'user_register' => variable_get('user_register', 1),
+        )
+    );
   }
-  return '';    // We don't render this more than once per page.
+  return ''; // We don't render this more than once per page.
 }
 
 
@@ -301,7 +331,7 @@ function slpjq_slider_render() {
  */
 function slpjq_redirect_form_if_errors($form, $redirect = NULL) {
   if (form_get_errors()) {
-    unset($_REQUEST['destination']);
+    unset($_GET['destination']);
     drupal_redirect_form($form, $redirect);
   }
 }
@@ -316,65 +346,64 @@ function slpjq_redirect_form_if_errors($form, $redirect = NULL) {
 function slpjq_get_config_form() {
   static $config_form;
   if (!isset($config_form)) {
-    $config_form = array( //! <strong>Drupal variables</strong> - We define these Drupal
-                          //! variables for our configuration. See the in-line definitions
-                          //! for details.
-      'slpjq_display_top' => array( //! - slpjq_display_top
-      // - slpjq_display_top
+    $config_form = array(//! <strong>Drupal variables</strong> - We define these Drupal
+      //! variables for our configuration. See the in-line definitions
+      //! for details.
+      'slpjq_display_top' => array(//! - slpjq_display_top
+        // - slpjq_display_top
         '#type' => 'checkbox',
         '#title' => t('Display at page top'),
         '#description' => t('Display above all regions of the page at the full width of the browser window. (Never displays on admin pages.)'),
         '#default_value' => variable_get('slpjq_display_top', TRUE),
-        ),
-      'slpjq_title' => array( //! - slpjq_title
+      ),
+      'slpjq_title' => array(//! - slpjq_title
         '#type' => 'textfield',
         '#title' => t('Slider title'),
         '#size' => 40,
         '#maxlength' => 128,
         '#description' => t('The title that appears on the left side of the slider.'),
         '#default_value' => variable_get('slpjq_title', variable_get('site_name', '')),
-        ),
-      'slpjq_image_url' => array( //! - slpjq_image_url
+      ),
+      'slpjq_image_url' => array(//! - slpjq_image_url
         '#type' => 'textfield',
         '#title' => t('Slider image URL'),
         '#size' => 60,
         '#maxlength' => 128,
         '#description' => t('The URL of an image to display below the slider title. Leave blank for none. Normally begins with a slash (<strong>/</strong>) or <strong>http://</strong>.'),
         '#default_value' => variable_get('slpjq_image_url', ''),
-        ),
-      'slpjq_slide_period' => array( //! - slpjq_slide_period
+      ),
+      'slpjq_slide_period' => array(//! - slpjq_slide_period
         '#type' => 'textfield',
         '#title' => t('Slide period'),
         '#size' => 4,
         '#maxlength' => 4,
         '#description' => t('The time period, in milliseconds, that it takes for the slider to slide up or down.'),
         '#default_value' => variable_get('slpjq_slide_period', 300),
-        ),
-      'slpjq_create_button_text' => array( //! - slpjq_create_button_text
+      ),
+      'slpjq_create_button_text' => array(//! - slpjq_create_button_text
         '#type' => 'textfield',
         '#title' => t('Text on &ldquo;Create new account&rdquo; button'),
         '#size' => 40,
         '#maxlength' => 128,
         '#description' => t('The text on the submit button for the form that creates a new account.'),
         '#default_value' => variable_get('slpjq_create_button_text', t('Create new account')),
-        ),
-      'slpjq_disallowed_paths' => array( //! - slpjq_disallowed_paths
+      ),
+      'slpjq_disallowed_paths' => array(//! - slpjq_disallowed_paths
         '#type' => 'textarea',
         '#title' => t('Paths where not to display to anonymous users'),
         '#size' => 40,
         '#maxlength' => 128,
         '#description' => t('Enter one page per line as Drupal paths. When the slider is in a block, this restriction is <em>in addition to</em> any block restrictions. Wildcards are not recognized here.'),
-        '#default_value' =>
-          variable_get('slpjq_disallowed_paths',
+        '#default_value' => variable_get('slpjq_disallowed_paths',
             implode("\n", array(
-              'login',
-              'user',
-              'user/password',
-              'user/register',
-              ))
+          'login',
+          'user',
+          'user/password',
+          'user/register',
+        ))
             ),
-        ),
-      );
+      ),
+    );
   }
   return $config_form;
 }

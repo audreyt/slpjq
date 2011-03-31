@@ -25,7 +25,7 @@
  */
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  *
  * To maximize code reusability, we simply pull in our admin
  * configuration form, which contains all of our variable names
@@ -40,7 +40,7 @@ function slpjq_install() {
 
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  *
  * We use the same reusability technique as we did above with
  * slpjq_install().
@@ -63,7 +63,7 @@ function slpjq_uninstall() {
  */
 function slpjq_install_get_config_form() {
   if (!function_exists('slpjq_get_config_form')) {
-    require_once('slpjq.module');
+    require_once DRUPAL_ROOT . '/' . 'slpjq.module';
   }
   return slpjq_get_config_form();
 }
